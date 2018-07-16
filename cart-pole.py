@@ -1,6 +1,7 @@
 import gym
 import tensorflow as tf
 import numpy as np
+import tensorboard
 
 class Model():
     def __init__(self):
@@ -20,6 +21,7 @@ env.reset()
 # https://gym.openai.com/docs/
 
 total_reward = 0
+max_reward = 1
 model = Model()
 while True:
     done = False
@@ -28,16 +30,38 @@ while True:
     while not done:
         env.render()
         prediction = model.model.predict(np.array([observation]))[0]
-        print(prediction)
         #SEARCH MAX
         action = np.argmax(prediction)
 
-        moves.append((observation, prediction,action))
+        moves.append((observation, prediction, action))
 
-        observation, reward, done, info = env.step(action)
+        _, reward, done, info = env.step(action)
 
         total_reward += reward
+
+
+    succes_rate = (total_reward/max_reward)-1
+    max_reward = max(total_reward, max_reward)
+    print(total_reward)
+    total_reward = 0
 
     #TODO TRAIN
     #FIRST CONVERT PREDICTION USING ACTION AND REWARD TO A TARGET ARRAY
     #THEN for each element in moves, train the model using the observation and target array
+
+    targets = []
+    observations = []
+    for move in moves:
+
+        #SUCCESRATE IS THE NEW TARGET
+        observation, prediction, action = move
+        observations.append(observation)
+        prediction[action] = succes_rate
+        targets.append(prediction)
+
+    observations = np.array(observations)
+    targets = np.array(targets)
+    model.model.fit(observations, targets,verbose=0)
+
+
+    env.reset()
