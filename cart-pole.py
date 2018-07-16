@@ -24,9 +24,8 @@ total_reward = 0
 max_reward = 1
 model = Model()
 while True:
-    done = False
     moves = []
-    observation, reward, done, info = env.step(env.action_space.sample())
+    observation, reward, done, _ = env.step(env.action_space.sample())
     while not done:
         env.render()
         prediction = model.model.predict(np.array([observation]))[0]
@@ -35,7 +34,7 @@ while True:
 
         moves.append((observation, prediction, action))
 
-        _, reward, done, info = env.step(action)
+        _, reward, done, _ = env.step(action)
 
         total_reward += reward
 
