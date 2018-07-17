@@ -13,13 +13,14 @@ class Model():
         self.model.add(tf.keras.layers.Dense(64, activation='relu'))
         self.model.add(tf.keras.layers.Dense(32, activation='relu'))
         self.model.add(tf.keras.layers.Dense(2))
-        self.model.compile(optimizer=tf.keras.optimizers.SGD(lr=0.003),
-                           loss=tf.keras.losses.mean_squared_error)
+        self.model.compile(optimizer=tf.keras.optimizers.SGD(),
+                           loss=tf.keras.losses.mean_squared_error) #sgd lr=0.003 was good
 
 
 env = gym.make('CartPole-v0')
+#defaul limit is 200!!!
+env._max_episode_steps = 5000
 env.reset()
-
 #if saved model then load it
 
 
@@ -31,16 +32,16 @@ very_total_reward = 0
 very_game_count = 0
 epsilon = 0.1
 n_epochs = 100000
-discount = 0.8
-model_name = 'cart-pole_dotsandboxes.h5'
-# tf.keras.models.load_model(model_name)
+discount = 0.9
+model_name = 'cart-pole_dotsandboxes_lr0.1_discount_{}_epsilon{}.h5'.format(discount,epsilon)
+# model = tf.keras.models.load_model(model_name)
 model = Model()
 while True:
     moves = []
     observation, reward, done, _ = env.step(env.action_space.sample())
     while not done:
         #only for visualizing
-        # env.render()
+        env.render()
         prediction = model.model.predict(np.array([observation]))[0]
         if random.uniform(0, 1) < epsilon:
             action = env.action_space.sample()
@@ -79,7 +80,7 @@ while True:
     # TODO TENSORBOARD
     model.model.fit(observations, targets, verbose=0)
     if very_game_count % 1000 == 0:
-        print('CURRENT AVG IS and Epsilon {}'.format(very_total_reward / 1000))
+        print('AVG: {} , Epoch {} , {}'.format(very_total_reward / 1000,very_game_count,model_name))
         very_total_reward = 0
         model.model.save(model_name)
         if very_game_count == n_epochs:

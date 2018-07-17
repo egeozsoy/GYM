@@ -13,13 +13,14 @@ class Model():
         self.model.add(tf.keras.layers.Dense(64, activation='relu'))
         self.model.add(tf.keras.layers.Dense(32, activation='relu'))
         self.model.add(tf.keras.layers.Dense(2))
-        self.model.compile(optimizer=tf.keras.optimizers.SGD(lr=0.003),
+        self.model.compile(optimizer=tf.keras.optimizers.SGD(),
                            loss=tf.keras.losses.mean_squared_error)
 
 
 env = gym.make('CartPole-v0')
+#defaul limit is 200!!!
+env._max_episode_steps = 5000
 env.reset()
-
 # https://gym.openai.com/docs/
 
 #
@@ -29,7 +30,9 @@ very_game_count = 0
 max_reward = 1
 epsilon = 0.1
 n_epochs = 100000
-discount = 0.8
+discount = 0.9
+model_name = 'cart-pole_successrate_lr0.1_discount_{}_epsilon{}.h5'.format(discount,epsilon)
+# model = tf.keras.models.load_model(model_name)
 model = Model()
 while True:
     moves = []
@@ -65,7 +68,7 @@ while True:
         observation_old, observation_new, prediction, action, reward, done = move
         observations.append(observation_old)
         # 1 Success Rate as Reward (not learning)
-        # prediction[action] = success_rate
+        prediction[action] = success_rate
 
         # 2 The last 10 moves can always save the game, so we reward them with 0, else 1 not working
         # if idx < len(moves) -10:
@@ -74,12 +77,12 @@ while True:
         #     prediction[action] = 0
 
         # 3 like dotsandboxes
-        if done:
-            prediction[action] = 0
-        else:
-            #use what the model would predict for the next one as basis for our reward
-            Q = np.max(model.model.predict(np.array([observation_new]))[0])
-            prediction[action] = reward + discount * Q
+        # if done:
+        #     prediction[action] = 0
+        # else:
+        #     #use what the model would predict for the next one as basis for our reward
+        #     Q = np.max(model.model.predict(np.array([observation_new]))[0])
+        #     prediction[action] = reward + discount * Q
 
         targets.append(prediction)
 
@@ -88,10 +91,10 @@ while True:
     # THIS IS STILL KERAS
     model.model.fit(observations, targets, verbose=0)
     if very_game_count % 1000 == 0:
-        print('CURRENT AVG IS and Epsilon {}'.format(very_total_reward / 1000))
+        print('AVG: {} , Epoch {} , {}'.format(very_total_reward / 1000, very_game_count, model_name))
         very_total_reward = 0
+        model.model.save(model_name)
         if very_game_count == n_epochs:
-            model.model.save('cart-pole_dotsandboxes.h5')
             break
 
     env.reset()
