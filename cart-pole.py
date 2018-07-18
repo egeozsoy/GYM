@@ -14,33 +14,32 @@ class Model():
         self.model.add(tf.keras.layers.Dense(32, activation='relu'))
         self.model.add(tf.keras.layers.Dense(2))
         self.model.compile(optimizer=tf.keras.optimizers.SGD(),
-                           loss=tf.keras.losses.mean_squared_error) #sgd lr=0.003 was good
+                           loss=tf.keras.losses.mean_squared_error)  # sgd lr=0.003 was good
 
 
 env = gym.make('CartPole-v0')
-#defaul limit is 200!!!
+# defaul limit is 200!!!
 env._max_episode_steps = 5000
 env.reset()
-#if saved model then load it
-
+# if saved model then load it
 
 # https://gym.openai.com/docs/
 
-#hyper params
+# hyper params
 total_reward = 0
 very_total_reward = 0
 very_game_count = 0
 epsilon = 0.1
 n_epochs = 100000
 discount = 0.9
-model_name = 'cart-pole_dotsandboxes_lr0.1_discount_{}_epsilon{}.h5'.format(discount,epsilon)
+model_name = 'cart-pole_dotsandboxes_lr0.1_discount_{}_epsilon{}.h5'.format(discount, epsilon)
 # model = tf.keras.models.load_model(model_name)
 model = Model()
 while True:
     moves = []
     observation, reward, done, _ = env.step(env.action_space.sample())
     while not done:
-        #only for visualizing
+        # only for visualizing
         env.render()
         prediction = model.model.predict(np.array([observation]))[0]
         if random.uniform(0, 1) < epsilon:
@@ -51,7 +50,7 @@ while True:
 
         observation_old = observation
         observation, reward, done, _ = env.step(action)
-        #training data
+        # training data
         moves.append((observation_old, observation, prediction, action, reward, done))
 
         total_reward += reward
@@ -77,10 +76,9 @@ while True:
 
     observations = np.array(observations)
     targets = np.array(targets)
-    # TODO TENSORBOARD
     model.model.fit(observations, targets, verbose=0)
     if very_game_count % 1000 == 0:
-        print('AVG: {} , Epoch {} , {}'.format(very_total_reward / 1000,very_game_count,model_name))
+        print('AVG: {} , Epoch {} , {}'.format(very_total_reward / 1000, very_game_count, model_name))
         very_total_reward = 0
         model.model.save(model_name)
         if very_game_count == n_epochs:
