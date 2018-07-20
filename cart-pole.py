@@ -58,7 +58,7 @@ while True:
     very_total_reward += total_reward
     very_game_count += 1
     total_reward = 0
-
+    #
     targets = []
     observations = []
     for idx, move in enumerate(moves):
