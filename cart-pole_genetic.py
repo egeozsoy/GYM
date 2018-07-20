@@ -8,10 +8,10 @@ import os
 
 env = gym.make('CartPole-v0')
 # defaul limit is 200!!!
-env._max_episode_steps = 200
+env._max_episode_steps = 5000
 env.reset()
 
-epoch = 10000
+epoch = 100
 
 def f(obs, params):
     tmp = params[0] + params[1]*obs[0] + params[2]*obs[1] + params[3]*obs[2] + params[4]*obs[3]
@@ -103,5 +103,11 @@ for i in range(epoch):
     print("best in generation {}: {}".format(i, get_best(res)))
     players = new_generation(res)
 
-    if (i%1000 == 0):
-        np.save('function',np.array(players))
+    np.save('function',np.array(players))
+
+# best in generation 0: 1491.52
+# best in generation 1: 1095.73
+# best in generation 2: 2855.95
+# best in generation 3: 4999.0
+# best in generation 4: 4999.0
+# best in generation 5: 4999.0
