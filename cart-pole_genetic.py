@@ -93,7 +93,6 @@ def new_generation(players):
 
 
 players = init()
-# players = [[0.8538134387693717, 0.8782469014832657, 7.744378202348017, 9.02427854572888, 7.925810882115055]]
 
 for i in range(epoch):
 
