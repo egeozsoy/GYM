@@ -32,6 +32,7 @@ very_game_count = 0
 epsilon = 0.1
 n_epochs = 500000
 discount = 0.9
+# achieves 1250 avg in 10000 games
 model_name = 'cart-pole_dotsandboxes_lr0.1_discount_{}_epsilon{}_64_2.h5'.format(discount, epsilon)
 model = Model()
 model.model = tf.keras.models.load_model(model_name)
