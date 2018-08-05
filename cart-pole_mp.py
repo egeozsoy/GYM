@@ -50,7 +50,7 @@ def play_and_train(player):
         observation, reward, done, _ = env.step(env.action_space.sample())
         while not done:
             # only for visualizing
-            # env.render()
+            env.render()
             prediction = model.model.predict(np.array([observation]))[0]
             if random.uniform(0, 1) < epsilon:
                 action = env.action_space.sample()
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     model_name = model_name_prefix + model_name_suffix
     for i in range(10):
         # create as many players as there are cpus
-        players = [range(cpus)]
+        players = [0 for i in range(cpus)]
         results = pool.map(play_and_train, players)
         # select the best of 8
         avg, best_model, was_random = sorted(results, reverse=True)[0]
