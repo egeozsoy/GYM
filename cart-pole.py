@@ -35,13 +35,13 @@ discount = 0.9
 # achieves 1250 avg in 10000 games
 model_name = 'cart-pole_dotsandboxes_lr0.1_discount_{}_epsilon{}_64_2.h5'.format(discount, epsilon)
 model = Model()
-model.model = tf.keras.models.load_model(model_name)
+# model.model = tf.keras.models.load_model(model_name)
 while True:
     moves = []
     observation, reward, done, _ = env.step(env.action_space.sample())
     while not done:
         # only for visualizing
-        env.render()
+        # env.render()
         prediction = model.model.predict(np.array([observation]))[0]
         if random.uniform(0, 1) < epsilon:
             action = env.action_space.sample()
@@ -78,8 +78,8 @@ while True:
     observations = np.array(observations)
     targets = np.array(targets)
     model.model.fit(observations, targets, verbose=0)
-    if very_game_count % 10000 == 0:
-        print('AVG: {} , Epoch {} , {}'.format(very_total_reward / 10000, very_game_count, model_name))
+    if very_game_count % 1000 == 0:
+        print('AVG: {} , Epoch {} , {}'.format(very_total_reward / 1000, very_game_count, model_name))
         very_total_reward = 0
         model.model.save(model_name)
         if very_game_count == n_epochs:
