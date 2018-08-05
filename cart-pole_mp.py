@@ -1,7 +1,7 @@
 import gym
 import tensorflow as tf
 import numpy as np
-from multiprocessing import Pool
+from multiprocessing import Pool , cpu_count
 import os
 import random
 from random import uniform
@@ -31,6 +31,8 @@ def play_and_train(player):
     pid = os.getpid()
     was_random = True
     model_name = '{}pid_{}{}'.format(model_name_prefix, pid, model_name_suffix)
+    #loads the base model which was the best model from the last run
+    #there is a chance no model will be loaded, and this pid will start from scratch(like mutating)
     if os.path.isfile(model_name_prefix + model_name_suffix) and uniform(0, 1) > 0.1:
         was_random = False
         model.model = tf.keras.models.load_model(model_name_prefix + model_name_suffix)
@@ -41,6 +43,7 @@ def play_and_train(player):
     env._max_episode_steps = 5000
     env.reset()
     n_epoch = 1000
+    #playing
     for i in range(n_epoch):
         moves = []
         observation, reward, done, _ = env.step(env.action_space.sample())
@@ -62,6 +65,7 @@ def play_and_train(player):
             total_reward += reward
         env.reset()
 
+        #training (after every game)
         targets = []
         observations = []
         for idx, move in enumerate(moves):
@@ -87,12 +91,14 @@ def play_and_train(player):
 
 
 if __name__ == '__main__':
-    pool = Pool(processes=8)
+    cpus = cpu_count()
+    pool = Pool(processes=cpus)
     model_name_prefix = 'cart-pole_multiprocess'
     model_name_suffix = '.h5'
     model_name = model_name_prefix + model_name_suffix
     for i in range(10):
-        players = [0, 0, 0, 0, 0, 0, 0, 0]
+        #create as many players as there are cpus
+        players = [range(cpus)]
         results = pool.map(play_and_train, players)
         # select the best of 8
         avg, best_model,was_random = sorted(results, reverse=True)[0]
@@ -109,3 +115,7 @@ if __name__ == '__main__':
                 os.remove(file)
 
         print('Max Avg {} in epoch {}'.format(avg, i))
+
+# reached just after 3 epochs
+# Model cart-pole_multiprocesspid_93133.h5 selected. Was_random: False
+# Max Avg 3351.15 in epoch 2
