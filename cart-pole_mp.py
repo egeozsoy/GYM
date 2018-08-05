@@ -1,7 +1,7 @@
 import gym
 import tensorflow as tf
 import numpy as np
-from multiprocessing import Pool , cpu_count
+from multiprocessing import Pool, cpu_count
 import os
 import random
 from random import uniform
@@ -19,7 +19,8 @@ class Model():
         self.model.compile(optimizer=tf.keras.optimizers.SGD(lr=0.003),
                            loss=tf.keras.losses.mean_squared_error)  # sgd lr=0.003 was good
 
-#make the whole think multiprocess
+
+# make the whole think multiprocess
 def play_and_train(player):
     # hyper params
     model_name_prefix = 'cart-pole_multiprocess'
@@ -31,8 +32,8 @@ def play_and_train(player):
     pid = os.getpid()
     was_random = True
     model_name = '{}pid_{}{}'.format(model_name_prefix, pid, model_name_suffix)
-    #loads the base model which was the best model from the last run
-    #there is a chance no model will be loaded, and this pid will start from scratch(like mutating)
+    # loads the base model which was the best model from the last run
+    # there is a chance no model will be loaded, and this pid will start from scratch(like mutating)
     if os.path.isfile(model_name_prefix + model_name_suffix) and uniform(0, 1) > 0.1:
         was_random = False
         model.model = tf.keras.models.load_model(model_name_prefix + model_name_suffix)
@@ -43,7 +44,7 @@ def play_and_train(player):
     env._max_episode_steps = 5000
     env.reset()
     n_epoch = 1000
-    #playing
+    # playing
     for i in range(n_epoch):
         moves = []
         observation, reward, done, _ = env.step(env.action_space.sample())
@@ -65,7 +66,7 @@ def play_and_train(player):
             total_reward += reward
         env.reset()
 
-        #training (after every game)
+        # training (after every game)
         targets = []
         observations = []
         for idx, move in enumerate(moves):
@@ -87,29 +88,29 @@ def play_and_train(player):
     # print('AVG: {} , {}'.format(total_reward / n_epoch, model_name))
     model.model.save(model_name)
 
-    return (total_reward / n_epoch, model_name,was_random)
+    return total_reward / n_epoch, model_name, was_random
 
 
 if __name__ == '__main__':
-    cpus = cpu_count()
+    cpus = cpu_count() // 2
     pool = Pool(processes=cpus)
     model_name_prefix = 'cart-pole_multiprocess'
     model_name_suffix = '.h5'
     model_name = model_name_prefix + model_name_suffix
     for i in range(10):
-        #create as many players as there are cpus
+        # create as many players as there are cpus
         players = [range(cpus)]
         results = pool.map(play_and_train, players)
         # select the best of 8
-        avg, best_model,was_random = sorted(results, reverse=True)[0]
-        #remove the old general model
+        avg, best_model, was_random = sorted(results, reverse=True)[0]
+        # remove the old general model
         if os.path.isfile(model_name):
             os.remove(model_name)
-        #change best temp model to general model
-        print('Model {} selected. Was_random: {}'.format(best_model,was_random))
+        # change best temp model to general model
+        print('Model {} selected. Was_random: {}'.format(best_model, was_random))
         os.rename(best_model, model_name)
 
-        #remove all unnecessary files
+        # remove all unnecessary files
         for file in os.listdir():
             if file[-3:] == '.h5' and file != model_name and 'multiprocess' in file:
                 os.remove(file)
