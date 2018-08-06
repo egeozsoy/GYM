@@ -26,7 +26,6 @@ def play_and_train(player):
     model_name_prefix = 'cart-pole_multiprocess'
     model_name_suffix = '.h5'
     epsilon = 0.1
-    n_epochs = 500000
     discount = 0.9
     model = Model()
     pid = os.getpid()
@@ -43,14 +42,14 @@ def play_and_train(player):
     # defaul limit is 200!!!
     env._max_episode_steps = 5000
     env.reset()
-    n_epoch = 1000
+    n_epoch = 10000
     # playing
     for i in range(n_epoch):
         moves = []
         observation, reward, done, _ = env.step(env.action_space.sample())
         while not done:
             # only for visualizing
-            env.render()
+            # env.render()
             prediction = model.model.predict(np.array([observation]))[0]
             if random.uniform(0, 1) < epsilon:
                 action = env.action_space.sample()
@@ -97,7 +96,7 @@ if __name__ == '__main__':
     model_name_prefix = 'cart-pole_multiprocess'
     model_name_suffix = '.h5'
     model_name = model_name_prefix + model_name_suffix
-    for i in range(10):
+    for i in range(100):
         # create as many players as there are cpus
         players = [0 for i in range(cpus)]
         results = pool.map(play_and_train, players)
